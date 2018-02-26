@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1"/>
+<title>Welcome to Oaxaca</title>
+<link rel="stylesheet" href="../static/bootstrap.css" th:href="@{/bootstrap.css}" />
+<script type="text/javascript" src="/static/angular.min.js" th:src="@{/angular.min.js}"></script>
+<script type="text/javascript" src="/static/app/app.js" th:src="@{/app/app.js}"></script>
+<script type="text/javascript" src="/static/app/menuController.js" th:src="@{/app/menuController.js}"></script>
+<script type="text/javascript" src="/static/app/orderController.js" th:src="@{/app/orderController.js}"></script>
+
+
+</head>
+<body ng-app="myApp">
+
+<!-- IMPLEMENT HEADER SECTION -->
+<header>
+<h1><center> Oaxaca Restaurant </center></h1>
+</header>
+
+<div class="container">
+<h4><center> About us</center> </h4>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ Sed et est ligula. Donec rutrum imperdiet quam vel vulputate.
+  Aenean justo tellus, tempor id facilisis sit amet, iaculis vel augue. 
+  Nam id varius dui. Aenean quis felis eget purus interdum tincidunt. 
+  Sed hendrerit viverra metus a rhoncus. Aenean laoreet pellentesque mauris, 
+  eu sagittis odio suscipit eget. Donec at enim aliquet, egestas mi vel, tristique mi. 
+  Fusce sollicitudin nibh quis nisl tincidunt, sed mollis lorem tincidunt.</p>
+</div>
+<p ng-model="table.property" ng-init="table.property = ''"></p>
+<p ng-model="name.property" ng-init="name.property = ''"></p>
+<!--<p ng-model="indx.property" ng-init="indx.property = 1"></p>-->
+
+<div ng-controller="orderController" class="container">
+		
+	<!-- 1.0 INPUT FORMS -->
+	<h4>Order Method</h4>
+	<div class="form-group">
+		<div>
+			<label for="x">1. Select your table:</label>
+		      <select style="width: 200px" class="form-control" id="x" ng-model="table.property" ng-change="addindx(0);">
+		        <option>Table 1</option>
+		        <option>Table 2</option>
+		        <option>Table 3</option>
+		        <option>Table 4</option>
+		        <option>Table 5</option>
+		        <option>Table 6</option>
+		      </select>
+    	</div>
+	</div>
+	<div>
+		<p>2. Tell us your name: </p>
+		<input type="text" ng-model="name.property" ng-change="addindx(0);"></input>
+		<p></p>
+	</div>
+	<!-- 1.0 END -->
+	
+	<!-- 2.0 MENU DISPLAY-->
+   <div class="container"> 
+	<h4>On our menu: </h4>
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th width="10%"> Id </th>
+				<th width="40%"> Menu Item </th>
+				<th width="20%"> Description</th>
+				<th width="20%"> Price </th>
+				<th width="20%"> containsNuts </th>
+				<th width="20%"> Vegetarian </th>
+				<th width="20%"> Calories </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="x in menu">
+				<td> {{x.id}}</td>
+				<td> {{x.name}}</td>
+				<td> {{x.description}}</td> 
+				<td> {{x.price | currency}}</td>
+				<td> {{x.containsNuts}}</td>
+				<td> {{x.veg}}</td>
+				<td> {{x.calories}}</td>
+				
+				<!-- 3.2 (yes 3.2, makes sense in ordCtrl.js) CUSTOMER SUBMITS ORDER TO 'ITEMS IN CURRENT ORDER' -->
+				<td><button  class="btn btn-primary" ng-click="mkcaseordr(x.id, name.property, table.property, x.name, x.price);"> Add to order </button></td> <!-- ng-controller="orderController"-->
+				<!-- 3.2 END -->
+			</tr>
+		</tbody>
+	</table>
+	<!-- 2.0 END -->
+	
+	<!-- 3.0 CUSTOMERS CURRENT ORDER 'ITEMS IN CURRENT ORDER' -->
+	<h5>Items in current order: </h5>
+		
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th width="10%"> Id </th>
+				<th width="20%"> Order No. </th>
+				<th width="20%"> ItemID </th>
+				<th width="50%"> Item Name </th>
+				<th width="30%"> Price </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="y in caseorder" ng-if="y.custName ==name.property &amp;&amp; y.custTable ==table.property &amp;&amp; y.index == ordrindex">
+				<td> {{y.id}}</td>
+				<td> {{y.index}}</td>
+				<td> {{y.itemId}}</td>
+				<td> {{y.orderedName}}</td>
+				<td> {{y.orderedPrice | currency}}</td>
+				
+				<!-- 3.1 DELETE ITEM FROM ORDER -->
+				<td><button class="btn btn-danger" ng-click="remove(y.id)"> Remove Item</button></td>
+				<!-- 3.1 END -->
+				
+			</tr>
+		</tbody>
+	</table>
+	<!-- 3.0 END -->
+		
+	<p ><i>Ready to order? Call one of our waiters OR post your order to us! {{ordrindex}}</i></p>
+
+	<!-- 4.0 SUBMIT AN ORDER TO WAITERS -->
+	<p><button class="btn btn-success" ng-click="mkordr(name.property, table.property);">Submit Order</button> <i><b>OR</b></i> <button class="btn btn-primary" ng-click="call(name.property, table.property)"> Request Waiter </button></p>
+	<!-- 4.0 END -->
+
+	<!-- 5.0 CUSTOMERS SUBMITTED ORDERS 'YOUR ORDERS'-->
+	<h5 >Your orders: </h5>
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th width="10%"> Id </th>
+				<th width="10%"> Order No. </th>
+				<th width="20%"> Name </th>
+				<th width="20%"> At </th>
+				<th width="20%"> Time </th>
+				<th width="80%"> Ordered items </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="c in order" ng-if="c.name ==name.property &amp;&amp; c.table ==table.property; c.waiter == false">
+				<td> {{c.id}}</td>
+				<td ng-init="addindx(c.index);"> {{c.index}}</td> 
+				<td> {{c.name}}</td>
+				<td> {{c.table}}</td>
+				<td> {{c.ordrTime}} </td>
+				<td> 
+					<table class="table table-hover">
+					<tr ng-repeat="z in caseorder" ng-if="z.custName ==c.name &amp;&amp; z.custTable ==c.table &amp;&amp; z.index ==c.index">
+						
+						<td> {{z.itemId}}</td>
+						<td> {{z.orderedName}}</td>
+						<td> {{z.orderedPrice | currency}}</td>
+						
+					</tr>
+					</table>
+				</td>
+				
+				<!-- 5.1 A CUSTOMER CAN REMOVE THIER SUBMITTED ORDER -->
+				<td><button class="btn btn-danger" ng-click="removeOrdr(c.id)"> Cancel Order</button></td>
+				<!-- 5.1 END -->
+				
+			</tr>
+		</tbody>
+	</table>
+	<!-- 5.0 END -->
+	
+  </div>
+</div>
+
+
+<!-- IMPLEMENT FOOTER SECTION -->
+<footer>
+
+<p><center>© Oaxaca 2018</center></p>
+</footer>
+
+
+</body>
+</html>

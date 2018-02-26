@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="ISO-8859-1"/>
+    <title>Waiter Management</title>
+    <link rel="stylesheet" href="../static/bootstrap.css" th:href="@{/bootstrap.css}"/>
+    <script type="text/javascript" src="/static/angular.min.js" th:src="@{/angular.min.js}"></script>
+    <script type="text/javascript" src="/static/app/app.js" th:src="@{/app/app.js}"></script>
+    <script type="text/javascript" src="/static/app/menuController.js" th:src="@{/app/menuController.js}"></script>
+    <script type="text/javascript" src="/static/app/orderController.js" th:src="@{/app/orderController.js}"></script>
+    <script type="text/javascript" src="/static/sockjs.js" th:src="@{sockjs.js}"></script>
+    <script type="text/javascript" src="/static/stomp.js" th:src="@{stomp.js}"></script>
+    <script type="text/javascript" src="/static/jquery.min.js" th:src="@{jquery.min.js}"></script>
+</head>
+<body ng-app="myApp">
+
+<!-- IMPLEMENT HEADER SECTION -->
+<header>
+    <h1>
+        <center>Waiter Management</center>
+    </h1>
+</header>
+
+<div ng-controller="orderController" class="container">
+
+    <!--6.0 ADD ITEM TO MENU -->
+    <br/>
+    <form>
+        <div>
+            Menu Item: <input type="text" ng-model="name"/>
+            Description: <input type="text" ng-model="description"/>
+            Price: <input type="text" ng-model="price"/>
+            containsNuts: <select style="width: 100px" ng-model="contNuts.property">
+            <option>true</option>
+            <option>false</option>
+        </select>
+            <br/>
+            <br/>
+            isVeg: <select align="right" style="width: 100px" ng-model="isVege.property">
+            <option>true</option>
+            <option>false</option>
+        </select>
+            Calories: <input type="text" ng-model="calories"/>
+            Preparation time: <input type="text" ng-model="prepTime"/>
+            <button class="btn btn-success"
+                    ng-click="add(name, description, price, isVege.property, contNuts.property, calories, prepTime)">Add
+                Item
+            </button>
+        </div>
+    </form>
+    <br/>
+    <!-- 6.0 END -->
+
+    <!-- 7.0 DISPLAY MENU -->
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="10%"> Id</th>
+            <th width="30%"> Menu Item</th>
+            <th width="20%"> Description</th>
+            <th width="20%"> Price</th>
+            <th width="20%"> containsNuts</th>
+            <th width="20%"> Vegetarian</th>
+            <th width="20%"> Calories</th>
+            <th width="10%"> Prep Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="x in menu">
+            <td> {{x.id}}</td>
+            <td> {{x.name}}</td>
+            <td> {{x.description}}</td>
+            <td> {{x.price | currency}}</td>
+            <td> {{x.containsNuts}}</td>
+            <td> {{x.veg}}</td>
+            <td> {{x.calories}}</td>
+            <td> {{x.prepTime}}</td>
+            <!-- 7.1 DELETE ITEM FROM MENU -->
+            <td>
+                <button class="btn btn-danger" ng-click="del(x.id)"> Delete</button>
+            </td>
+            <!-- 7.1 END -->
+        </tr>
+        </tbody>
+    </table>
+    <!-- 7.0 END -->
+
+    <!-- 8.0 PENDING ORDERS (uses same methods as others, 8.0 not defined in ordCtrl.js)-->
+    <p></p>
+
+    <h4> Pending Orders</h4>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="10%"> Id</th>
+            <th width="10%"> Order No.</th>
+            <th width="20%"> Name</th>
+            <th width="20%"> At</th>
+            <th width="20%"> Time</th>
+            <th width="80%"> ordered items</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="y in order" ng-if="y.confirmed == false; y.waiter == false">
+            <td> {{y.id}}</td>
+            <td> {{y.index}}</td>
+            <td> {{y.name}}</td>
+            <td> {{y.table}}</td>
+            <td> {{y.ordrTime}}</td>
+            <td>
+                <table class="table table-hover">
+                    <tr ng-repeat="z in caseorder"
+                        ng-if="z.custName ==y.name &amp;&amp; z.custTable ==y.table &amp;&amp; z.index ==y.index">
+                        <td> {{z.itemId}}</td>
+                        <td> {{z.orderedName}}</td>
+                        <td> {{z.orderedPrice | currency}}</td>
+
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <button class="btn btn-danger" ng-click="removeOrdr(y.id)"> Cancel Order</button>
+            </td>
+            <td>
+                <button class="btn btn-success" ng-click="confirmOrdr(y.id)">Confirm Order</button>
+            </td>
+            <!-- <td><button class="btn btn-success" ng-click="find(y.id)"> Show Order</button></td>-->
+        </tr>
+        </tbody>
+    </table>
+
+    <h4>Assistance Required</h4>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="50%"> Table Number</th>
+            <th width="50%"> Client Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-if="y.waiter==true" ng-repeat="y in order">
+            <td> {{y.table}}</td>
+            <td> {{y.name}}</td>
+            <td>
+                <button class="btn btn-success" ng-click="removeOrdr(y.id)">Problem Solved</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h4> Confirmed Orders</h4>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="10%"> Id</th>
+            <th width="10%"> Order No.</th>
+            <th width="20%"> Name</th>
+            <th width="20%"> At</th>
+            <th width="20%"> Time</th>
+            <th width="80%"> ordered items</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="y in order" ng-if="y.confirmed == true &amp;&amp; y.ready == false">
+            <td> {{y.id}}</td>
+            <td> {{y.index}}</td>
+            <td> {{y.name}}</td>
+            <td> {{y.table}}</td>
+            <td> {{y.ordrTime}}</td>
+            <td>
+                <table class="table table-hover">
+                    <tr ng-repeat="z in caseorder"
+                        ng-if="z.custName ==y.name &amp;&amp; z.custTable ==y.table &amp;&amp; z.index ==y.index">
+                        <td> {{z.itemId}}</td>
+                        <td> {{z.orderedName}}</td>
+                        <td> {{z.orderedPrice | currency}}</td>
+
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <button class="btn btn-danger" ng-click="removeOrdr(y.id)"> Cancel Order</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h4> Ready Orders</h4>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="10%"> Id</th>
+            <th width="10%"> Order No.</th>
+            <th width="20%"> Name</th>
+            <th width="20%"> At</th>
+            <th width="20%"> Time</th>
+            <th width="80%"> ordered items</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="y in order" ng-if="y.ready == true;">
+            <td> {{y.id}}</td>
+            <td> {{y.index}}</td>
+            <td> {{y.name}}</td>
+            <td> {{y.table}}</td>
+            <td> {{y.ordrTime}}</td>
+            <td>
+                <table class="table table-hover">
+                    <tr ng-repeat="z in caseorder"
+                        ng-if="z.custName ==y.name &amp;&amp; z.custTable ==y.table &amp;&amp; z.index ==y.index">
+                        <td> {{z.itemId}}</td>
+                        <td> {{z.orderedName}}</td>
+                        <td> {{z.orderedPrice | currency}}</td>
+
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <button class="btn btn-success" ng-click="removeOrdr(y.id)"> Delivered</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 8.0 END -->
+
+</div>
+
+
+<!-- IMPLEMENT FOOTER SECTION -->
+<footer>
+
+    <p>
+    <center>© Oaxaca 2018</center>
+    </p>
+</footer>
+
+
+</body>
+<script type="text/javascript">
+    var stompClient = null;
+    connect();
+    function connect() {
+        var socket = new SockJS('/endpointSang');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected:' + frame);
+            stompClient.subscribe('/topic/waiterNotify', function (response) {
+                location.reload();
+                showResponse(response.body);
+            });
+            stompClient.subscribe('/topic/kitchenStaffNotify', function (response) {
+                location.reload();
+                showResponse(response.body);
+            });
+        });
+    }
+    function disconnect() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log('Disconnected');
+    }
+
+    function showResponse(message) {
+        alert(message);
+    }
+</script>
+</html>

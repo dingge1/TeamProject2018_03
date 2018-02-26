@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1"/>
+<title>Kitchen Staff</title>
+<link rel="stylesheet" href="../static/bootstrap.css" th:href="@{/bootstrap.css}" />
+<script type="text/javascript" src="/static/angular.min.js" th:src="@{/angular.min.js}"></script>
+<script type="text/javascript" src="/static/app/app.js" th:src="@{/app/app.js}"></script>
+<script type="text/javascript" src="/static/app/menuController.js" th:src="@{/app/menuController.js}"></script>
+<script type="text/javascript" src="/static/app/orderController.js" th:src="@{/app/orderController.js}"></script>
+
+
+</head>
+<body ng-app="myApp">
+
+<!-- IMPLEMENT HEADER SECTION -->
+<header>
+<h1><center>Kitchen Staff</center></h1>
+</header>
+
+<div ng-controller="orderController" class="container">
+
+	
+	<!-- 8.0 PENDING ORDERS (uses same methods as others, 8.0 not defined in ordCtrl.js)-->
+	<p></p>
+	<h4> Orders </h4>
+	
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th width="10%"> Id </th>
+				<th width="10%"> Order No. </th>
+				<th width="20%"> Time </th>
+				<th width="80%"> Ordered items </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="y in order" ng-if="y.confirmed == true &amp;&amp; y.ready == false">
+				<td> {{y.id}}</td>
+				<td> {{y.index}}</td>
+				<td> {{y.ordrTime}} </td>
+				<td> 
+					<table class="table table-hover">
+					<tr ng-repeat="z in caseorder" ng-if="z.custName ==y.name &amp;&amp; z.custTable ==y.table &amp;&amp; z.index ==y.index">
+						<td> {{z.itemId}}</td>
+						<td> {{z.orderedName}}</td>
+						
+					</tr>
+					</table>
+				</td>
+				
+				<td><button class="btn btn-success" ng-click="readyOrdr(y.id)"> Ready </button></td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<!-- 8.0 END -->
+	
+</div>
+
+
+<!-- IMPLEMENT FOOTER SECTION -->
+<footer>
+
+<p><center>© Oaxaca 2018</center></p>
+</footer>
+
+
+</body>
+</html>
